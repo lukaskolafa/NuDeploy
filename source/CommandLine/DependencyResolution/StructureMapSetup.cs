@@ -110,7 +110,7 @@ namespace NuDeploy.CommandLine.DependencyResolution
 
                         /* build */
                         config.For<IBuildFolderPathProvider>().Use<BuildFolderPathProvider>();
-                        config.For<ISolutionBuilder>().Use<SolutionBuilder>();
+                        config.For<ISolutionBuilder>().Use<MSBuild14SolutionBuilder>();
                         config.For<IBuildResultFilePathProvider>().Use<ConventionBasedBuildResultFilePathProvider>();
                         config.For<IBuildPropertyProvider>().Use<BuildPropertyProvider>();
 

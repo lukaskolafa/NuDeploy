@@ -57,15 +57,21 @@ namespace NuDeploy.Core.Common.Logging
             var entry = new[] { date, time, utcOffset, user, computer, content };
             string line = string.Join(ValueSeperator, entry);
 
-            File.AppendAllLines(this.logfilPath, new List<string> { line }, this.logfileEncoding);
+            try
+            {
+                File.AppendAllLines(this.logfilPath, new List<string> {line}, this.logfileEncoding);
+            } catch { }
         }
 
         private void InitializeLogFile()
         {
-            if (!File.Exists(this.logfilPath))
+            try
             {
-                File.WriteAllText(this.logfilPath, string.Join(ValueSeperator, this.colmns) + Environment.NewLine, this.logfileEncoding);
-            }
+                if (!File.Exists(this.logfilPath))
+                {
+                    File.WriteAllText(this.logfilPath, string.Join(ValueSeperator, this.colmns) + Environment.NewLine, this.logfileEncoding);
+                }
+            } catch { }
         }
 
         private string GetLogfilePath()
