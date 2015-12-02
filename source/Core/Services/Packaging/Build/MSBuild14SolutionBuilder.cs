@@ -15,8 +15,6 @@ namespace NuDeploy.Core.Services.Packaging.Build
         private readonly IBuildPropertyProvider buildPropertyProvider;
         private readonly IUserInterface userInterface;
 
-        private bool successLogReceived;
-
         public MSBuild14SolutionBuilder(IBuildFolderPathProvider buildFolderPathProvider, IBuildPropertyProvider buildPropertyProvider, IUserInterface userInterface)
         {
             if (buildFolderPathProvider == null)
@@ -76,7 +74,7 @@ namespace NuDeploy.Core.Services.Packaging.Build
                 process.WaitForExit(600000);
 
                 exitCode = process.ExitCode;
-                success = exitCode == 0 && successLogReceived;
+                success = exitCode == 0; 
             }
             catch (Exception e)
             {
@@ -94,15 +92,10 @@ namespace NuDeploy.Core.Services.Packaging.Build
                     buildConfiguration,
                     string.Join(",", buildProperties.Select(p => p.Key + "=" + p.Value)));
             }
-
-            if (!successLogReceived)
-            {
-                this.userInterface.WriteLine("MSBuild: ERROR FAILED no success log received from MSBuild!");
-            }
-
+            
             if (exitCode != 0)
             {
-                this.userInterface.WriteLine("MSBuild: ERROR FAILED process did not exited with code: " + exitCode);
+                this.userInterface.WriteLine("MSBuild: ERROR FAILED process did not exited with code 0. Exit code was: " + exitCode);
             }
 
             return new FailureResult(
@@ -111,16 +104,25 @@ namespace NuDeploy.Core.Services.Packaging.Build
                 buildConfiguration,
                 string.Join(",", buildProperties.Select(p => p.Key + "=" + p.Value)));
         }
-
+        
         private void Process_OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
-            if (!string.IsNullOrEmpty(e.Data))
+            try
             {
-                this.userInterface.WriteLine(e.Data);
-                
-                if (e.Data.Contains("Build succeeded"))
+                if (!string.IsNullOrEmpty(e.Data))
                 {
-                    this.successLogReceived = true;
+                    this.userInterface.WriteLine(e.Data);
+                }
+            }
+            catch (Exception)
+            {
+                try
+                {
+                    this.userInterface.WriteLine("Error Occured while loggin output from MSBuild Process");
+                }
+                catch (Exception)
+                {
+                    // no error here
                 }
             }
         }
